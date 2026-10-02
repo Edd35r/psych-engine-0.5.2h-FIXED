@@ -21,19 +21,24 @@ jobs:
         with:
           ndk-version: r21e
 
-      - name: Setup Java JDK
+      - name: Setup Java 17 (para sdkmanager)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install Android SDK packages
+        run: |
+          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -n 1)
+          echo "Usando sdkmanager en: $SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-29" "build-tools;30.0.3"
+
+      - name: Setup Java 11 (para compilar)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 11
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android SDK packages
-        run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager "platform-tools" "platforms;android-29" "build-tools;30.0.3"
 
       - name: Setup Haxe
         uses: krdlab/setup-haxe@v1
