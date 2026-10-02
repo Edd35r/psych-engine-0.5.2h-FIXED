@@ -91,6 +91,20 @@ jobs:
 
           haxelib list
 
+      - name: Patch extension-androidtools (compatibilidad con Gradle de Lime 7.9)
+        run: |
+          for f in $(find ~/haxelib/extension-androidtools -name build.gradle); do
+            echo "=== ANTES: $f"; cat "$f"
+            sed -i -E '/^[[:space:]]*namespace[[:space:]]/d' "$f"
+            sed -i -E 's/\bcompileSdk[[:space:]]+([0-9]+)/compileSdkVersion \1/; s/\bminSdk[[:space:]]+([0-9]+)/minSdkVersion \1/; s/\btargetSdk[[:space:]]+([0-9]+)/targetSdkVersion \1/' "$f"
+            grep -q compileSdkVersion "$f" || sed -i -E '0,/android[[:space:]]*\{/s//android {\n    compileSdkVersion 29/' "$f"
+            echo "=== DESPUES: $f"; cat "$f"
+          done
+          for m in $(find ~/haxelib/extension-androidtools -name AndroidManifest.xml); do
+            grep -q 'package=' "$m" || sed -i 's/<manifest/<manifest package="org.haxe.extension.androidtools"/' "$m"
+            echo "=== MANIFEST: $m"; cat "$m"
+          done
+
       - name: Create Version Tag
         run: echo "${{ github.run_id }}" > VERSION
 
